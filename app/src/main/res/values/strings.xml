@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">NumberGuess</string>
+    <string name="title.numberguess">NumberGuess</string>
+    <string name="btn.start">start</string>
+    <string name="label.guess">guess a number:</string>
+    <string name="btn.do.guess">Do guess!</string>
+    <string name="edit.number">Number</string>
+    <string name="status.start.info">Press START to start a game</string>
+    <string name="label.log">Log:</string>
+    <string name="guess.hint">Guess a number between %1$d and %2$d</string>
+    <string name="status.too.low">Sorry, too low.</string>
+    <string name="status.too.high">Sorry, too high.</string>
+    <string name="input.too.low">Sorry, less than the range. </string>
+    <string name="input.too.high">Sorry, more than the range. </string>
+    <string name="status.hit">
+        You got it after %1$d tries!
+        Press START for a new game.
+    </string>
+    <string name="btn.colorChange">Color Change</string>
+</resources>
