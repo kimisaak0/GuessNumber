@@ -1,9 +1,13 @@
 package plti.android.numberguess
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -11,17 +15,17 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import plti.android.numberguess.common.Constants
 import plti.android.numberguess.common.GameException
-import plti.android.numberguess.databinding.ActivityMainBinding
 import plti.android.numberguess.model.GameUser
 import plti.android.numberguess.random.RandomNumberGenerator
 import plti.android.numberguess.random.impl.StdRandom
 import kotlin.collections.ArrayList
 
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
+import plti.android.numberguess.statistics.Statistics
 
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var mv: ActivityMainBinding
 
     var started = false
     var number = 0
@@ -32,11 +36,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mv = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(mv.root)
-
+        setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
         fetchSavedInstanceData(savedInstanceState)
-        mv.doGuess.setEnabled(started)
+        doGuess.setEnabled(started)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -44,42 +47,57 @@ class MainActivity : AppCompatActivity() {
         putInstanceData(outState)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menu_options, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.statistics -> {
+            openStatistics()
+            true
+        }
+        else -> {super.onOptionsItemSelected(item) }
+    }
+
     //버튼 함수 ------------------------------------------------------------------------------------//
 
     fun start(v: View) {
         log("game started")
-        mv.num.setText("")
+        num.setText("")
         started=true
-        mv.doGuess.setEnabled(true)
-        mv.status.text = getString(R.string.guess_hint, Constants.LOWER_BOUND, Constants.UPPER_BOUND)
+        doGuess.setEnabled(true)
+        status.text = getString(R.string.guess_hint, Constants.LOWER_BOUND, Constants.UPPER_BOUND)
         val span = Constants.UPPER_BOUND + Constants.LOWER_BOUND + 1
         number = rnd.rnd(Constants.LOWER_BOUND,Constants.UPPER_BOUND)
         tries = 0
     }
 
     fun guess(v:View) {
-        if(mv.num.text.toString() == "") return
+        if(num.text.toString() == "") return
 
         try {
-            val g = mv.num.text.toString().toInt()
+            val g = num.text.toString().toInt()
 
             if(g < Constants.LOWER_BOUND) throw GameException("Must guess a number >= ${Constants.LOWER_BOUND}")
             if(g > Constants.UPPER_BOUND) throw GameException("Must guess a number <= ${Constants.UPPER_BOUND}")
 
             tries++
-            log("Guessed ${mv.num.text} (tries:${tries}")
+            log("Guessed ${num.text} (tries:${tries}")
 
             if(g < number) {
-                mv.status.setText(R.string.status_too_low)
-                mv.num.setText("")
+                status.setText(R.string.status_too_low)
+                num.setText("")
 
             } else if(g > number) {
-                mv.status.setText(R.string.status_too_high)
-                mv.num.setText("")
+                status.setText(R.string.status_too_high)
+                num.setText("")
             } else {
-                mv.status.text = getString(R.string.status_hit, tries)
+                Statistics.register(number, tries)
+                status.text = getString(R.string.status_hit, tries)
                 started = false
-                mv.doGuess.setEnabled(false)
+                doGuess.setEnabled(false)
             }
         } catch(e:GameException) {
             Toast.makeText(this, "Guessable numbers: ${Constants.LOWER_BOUND} to ${Constants.UPPER_BOUND}", Toast.LENGTH_LONG).show()
@@ -103,8 +121,8 @@ class MainActivity : AppCompatActivity() {
             putBoolean("started", started)
             putInt("number", number)
             putInt("tries", tries)
-            putString("statusMsg", mv.status.text.toString())
-            putStringArrayList("logs", ArrayList(mv.console.text.split("\n")))
+            putString("statusMsg", status.text.toString())
+            putStringArrayList("logs", ArrayList(console.text.split("\n")))
         }
     }
 
@@ -113,14 +131,19 @@ class MainActivity : AppCompatActivity() {
             started = getBoolean("started")
             number = getInt("number")
             tries = getInt("tries")
-            mv.status.text = getString("statusMsg")
-            mv.console.text = getStringArrayList("logs")!!.joinToString("\n")
+            status.text = getString("statusMsg")
+            console.text = getStringArrayList("logs")!!.joinToString("\n")
         }
     }
 
     private fun log(msg:String) {
         Log.d("LOG", msg)
-        mv.console.log(msg)
+        console.log(msg)
+    }
+
+    private fun openStatistics() {
+        val intent: Intent = Intent(this,StatisticsActivity::class.java)
+        startActivity(intent)
     }
 }
 

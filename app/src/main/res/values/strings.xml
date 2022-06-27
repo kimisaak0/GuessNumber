@@ -17,4 +17,5 @@
         Press START for a new game.
     </string>
     <string name="btn.colorChange">Color Change</string>
+    <string name="statistics.menu_title">Statistics</string>
 </resources>
